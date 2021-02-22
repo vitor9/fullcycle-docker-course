@@ -1,0 +1,174 @@
+ 
+================================== NETWORKS =======================================
+Quando estamos falando de Docker, o Docker possui um sistema de network.
+Essa network pode servir para diversas coisas, a principal delas, é um container falando com o outro.
+
+Por exemplo, crio um container para a minha aplicação, e o outro para o MySQL. Para fazermos esses dois containers se 
+comunicarem, precisamos fazer com que eles estejam na mesma rede. Para isso, temos os recursos de network.
+
+Temos alguns tipos de network.
+O primeiro tipo, e o mais comum que iremos utilizar, é o BRIDGE.
+Basicamente, quando criamos uma network e não informamos o tipo dela, é por padrão
+criado como bridge.
+
+A rede bridge é utilizada para que um container se conecte facilmente com o outro.
+
+Outro format, é o HOST
+Ele "mescla" a network do Docker, com a network do HOST do Docker.
+Imaginando que estou rodando uma app PHP na minha porta 80 . Quando crio uma network
+do tipo HOST e subo o meu container nessa minha msm network, o container nessa mesma
+network, vai poder acessar a minha propria máquina/Docker host.
+Minha máquina pode acessar uma porta direta no container.
+
+Tem também o overlay.
+Para que um container consiga falar com o outro em máquinas diferentes, precisa estar
+estes containers em uma overlay network.
+
+Tem o maclan
+Esse cara pode parecer que é uma network que está plugada em nossa rede.
+
+E o none
+Utilizado para formas isoladas, ele não faz parte de nenhuma rede.
+
+
+============================= Trabalhando com bridge ==============================
+Ao digitar "docker network", conforme o texto abaixo, vamos ver que tem vários comandos de network.
+Usage:  docker network COMMAND
+
+Manage networks
+
+Commands:
+  connect     Connect a container to a network
+  create      Create a network
+  disconnect  Disconnect a container from a network
+  inspect     Display detailed information on one or more networks
+  ls          List networks
+  prune       Remove all unused networks
+  rm          Remove one or more networks
+
+
+O comando Docker network prune mata todas as networks não utilizadas
+
+Quando eu crio uma network, posso setar o nome dela
+
+Todas as vezes que eu não setar network que eu for trabalhar e não subir um container, vai subir 
+por padrão com bridge
+
+"docker run -d -it --name ubuntu1 bash"
+
+Rodando um segundo container
+"docker run -d -it --name ubuntu2 bash"
+
+passamos o parametro -it para rodar de forma interativa, mas ao mesmo
+tempo passamos o parametro -d, para "desapegarmos" do bash
+
+Temos 2 opções para rodar no nosso container
+1. docker exec e rodar o bash
+2. rodar o comando attached.
+
+ao dar o Docker network, vemos que um dos comandos é o inspect, que utilizamos para inspecionar
+uma network.
+
+docker network inspect bridge
+
+"Containers": {
+            "0da6a01219d737b1cbea73fac6d5f3e42f2382d71d8bd312bf4cdf81f07e89d2": {
+                "Name": "ubuntu1",
+                "EndpointID": "90eda8c5530f273d775c86beb558d4b156d184c9cde79c1b1096f9b732f8f212",
+                "MacAddress": "02:42:ac:11:00:02",
+                "IPv4Address": "172.17.0.2/16",
+                "IPv6Address": ""
+            },
+            "6077f839ebbba9d689405bd6fa47b840d41af47e8862eaba38f5dbbca8d427ba": {
+                "Name": "ubuntu2",
+                "EndpointID": "fc90ae402681ebf2e79bbbf299df61c8ed2a9a4be223171c93ad2764fff4d51c",
+                "MacAddress": "02:42:ac:11:00:03",
+                "IPv4Address": "172.17.0.3/16",
+                "IPv6Address": ""
+            }
+        }
+Olhando o IP das duas, vemos que estamos na mesma network bridge dentro dessas
+duas máquinas.
+
+Quando entramos dessa maneira padrão, temos o seguinte comportamento
+Ao rodarmos o comando 
+docker attach ubuntu1
+
+Para iniciar nossa máquina do ubuntu1 em bash, ao rodarmos o 
+ip addr show
+
+Para validar o IP da nossa maquina que mostrou "172.17.0.2/16", podemos dar um
+ping no nosso ubuntu2, que é o "172.17.0.3/16", que vamos suceder no ping. Isso mostra
+que a nossa máquina realmente está na mesma rede.
+
+Se dermos ping do ubuntu1, colocando o hostname "ubuntu2" ao invés do 
+IP, vai retornar o seguinte erro "ubuntu2".
+
+Podemos deletar nossos containers com o comando
+docker rm ubuntu1.
+
+Vamos criar agora uma nova rede
+docker network create --driver bridge minharede
+Se dermos um "docker network ls", vamos ver que vai listar "minharede".
+
+
+Criando novos containers em nossa rede
+docker run -dit --name ubuntu1 --network minharede bash
+
+Rodando nosso container
+docker exec -it ubuntu1 bash
+
+Agora podemos dar um ping no hostname da maquina
+
+Criando um 3o container fora da minharede
+docker run -dit --name ubuntu3 bash
+
+docker exec -it ubuntu3 bash
+
+Podemos também conectar um container em uma máquina com:
+docker network connect minharede ubuntu3
+
+Com isso, ao rodar de novo o ubuntu3
+docker exec -it ubuntu3 bash
+
+E dar um ping no ubuntu2, vamos suceder
+
+============================== Trabalhando com host ===============================
+Rodamos o comando para inicializar o nginx em conexão host
+docker run --rm -d --name nginx --network host nginx
+
+Validamos com o curl no localhost
+curl http://localhost
+
+O Docker foi feito para rodar no Linux.
+O Docker desktop emula uma maquina virtual para falar com o Docker. o Dockerhost no final das contas é uma máquina virtual, e não a nossa própria maquina.
+Quando fizer o Docker noformato host, ele vai estar juntando os containers Docker da máquina virtual, e não com o SO(Windows/Mac).
+
+Quando utilizamos o Windows + WSL2, é diferente, pq o WSL2 é um Linux de verdade.
+Quando acessarmos o localhost, devia funcionar na porta 80. Pq o Docker juntou a rede do Docker Host com a Rede do Container.
+No caso do Mac ou Windows sem WSl2, ele não vai conseguir pegar pq a máquina do SO, não é a máquina rodando o Docker
+
+No Linux, não teriamos este problema.
+
+
+============================= Container acessando nossa maquina ===========================
+As vezes, vamos estar utilizando o nosso container Docker,
+mas do nosso lado do container, precisamos alguma porta ou recurso, do DockerHost. Como faremos?
+
+Ao rodarmos o comando:
+php -S 0.0.0.0:8000
+
+Subimos o servidor do PHP, subimos o PHP local da nossa máquina(não é docker)
+Se precisasemos fazer com que o nosso container docker acessasse a porta 8000 para pegar o conteudo do index.html?
+
+No network host, juntavamos tudo, agora, o meu container precisa acessar a minha maquina.
+
+Ao rodarmos o nosso container com o comando
+docker run --rm -it --name ubuntu ubuntu bash
+
+instalamos o curl no nosso ubuntu e acessamos o conteúdo da nossa máquina com o comando.
+curl http://host.docker.internal:8000
+
+É o meu container acessando a nossa máquina, aonde tenho o servidor do PHP rodando. As vezes precisamos que o nosso docker acesse
+o nosso conteúdo/recurso na nossa máquina, para autenticação ou coisa assim.
+Quando utilizamos o host.docker.internal
