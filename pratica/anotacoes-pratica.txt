@@ -30,3 +30,41 @@ docker run --rm -d --name laravel -p 8001:8001 vssouza7/laravel --host=0.0.0.0 -
 
 Basta mapearmos os passos que fizemos no container, como instalação e preparação de ambiente, que temos um
 roteiro para add no Dockerfile
+
+Parte do NODE:
+A nossa ideia agora, eh compartilhar a pasta do nosso computador, com o container que for rodar.
+Pq ai consigo alterar no meu computador e ver o resultado no meu container.
+
+Para compartilharmos o nosso volume, colocamos o parametro "-v"
+
+Ao rodar o comando abaixo, estamos criando uma nova imagem para o Docker, iremos rodar um node 15 de forma interativa entrando no container
+pelo bash, compartilhando no host 3000 e porta 3000, compartilhando o volume da nossa pasta atual, 
+para a pasta do container /usr/src/app/.
+Com isso, tudo que escrevermos no nosso container, vai aparecer na nossa maquina, e vice-versa
+docker run --rm -it -v $(pwd)/:/usr/src/app -p 3000:3000 node:15 bash
+
+Não existe mais compartilhamento de arquivos, quando vou gerar a minha img. Quando vou gerar minha img
+eu tenho que colocar tudo dentro delas.
+Quero pegar nossos arquivos da nosso projeto do visual studio, e jogar para o nosso container, ou da imagem que estou gerando.
+
+Para isso, utilizamos o "COPY . .", ou seja, vou copiar tudo que esta na pasta que estou desenvolvendo e dando o build
+e vou jogar na pasta "app" para mim.
+
+Com o comando abaixo, outros containers podem ter acesso ao nosso container através dessa porta
+Expose <numerodaporta>
+
+Buildando o nosso projeto NODE
+docker build -t vssouza7/hello-express .
+
+Rodando para ver se os passos do nosso Dockerfile deram certo
+docker run -p 3000:3000 vssouza7/hello-express:latest
+
+Subindo a nossa imagem para os repositorios do Dockerhub
+docker push vssouza7/hello-express
+
+Uma coisa comum d e acontecer, é quando trabalhamos com mais de 1 Dockerfile, p/ex. Dockerfile e Dockerfile.prod
+O prod tem o Copy, que é para copiar tudo que ta na imagem, e guarda para empacotar. 
+Para darmos um docker-build somente em um Dockerfile, devemos rodar o seguinte ocmando dentro da pasta com os Dockerfiles:
+docker build -t vssouza7/hello-express . -f Dockerfile.prod
+
+Garantimos que podemos trabalhar com uma versão local e outra de publicação.
