@@ -1,0 +1,32 @@
+docker run --rm --name  laravel -p 8000:8000 vssouza7/laravel
+
+Expondo a porta 8000.
+
+Como o laravel ta rodando em desenvolvimento, o serv de desenv esta programando para rodar apenasa na porta 127.0.0.1 do Container. Como Estoua cessando fora, não
+estou acessando por esse endereç, então, ele não vai funcionar.
+Teria que deixar esse acesso liberado para qualquer host.
+
+Lembrando que entrypoint é o comando de entrada do nosso container, e o CMD, são os "parametros" para o entrypoinit.
+
+O entrypoint não pode ser substituido, mas o cmd pode.
+
+Matando o container só com o inicio do ID dele, p/ex:
+docker rm -f 7de
+
+Para rodarmos o nosso container, utilizamos o comando:
+docker run --rm -d --name laravel -p 8000:8000 vssouza7/laravel
+
+Para sabermos o que está acontecendo no nosso container, validamos o log com o seguinte comando:
+docker logs <nomedocontainer>
+
+o CMD é basicamente "anexado" ao entrypoint. O cmd também pode ser substituido. Por exemplo:
+Se especificamos que o nosso container vai rodar na porta 8000 no Docker file, podemos passar o mesmo parametro quando formos subir, colocando depois das
+informacoes da imagem
+p/ex:
+# Dockerfile
+CMD ["--host=0.0.0.0"]
+# Comando para subir container
+docker run --rm -d --name laravel -p 8001:8001 vssouza7/laravel --host=0.0.0.0 --port=8001
+
+Basta mapearmos os passos que fizemos no container, como instalação e preparação de ambiente, que temos um
+roteiro para add no Dockerfile

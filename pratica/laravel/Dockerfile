@@ -1,10 +1,22 @@
-apt-get update
+FROM php:7.4-cli
 
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');"
-php -r "if (hash_file('sha384', 'composer-setup.php') === '756890a4488ce9024fc62c56153228907f1545c228516cbf63f885e036d37e9a59d27d63f46af1d4d07ee0f76181c7d3') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;"
-php composer-setup.php
-php -r "unlink('composer-setup.php');"
+WORKDIR /var/www
 
-apt-get install libzip-dev -y
+RUN apt-get update && \
+    apt-get install libzip-dev -y && \
+    docker-php-ext-install zip
 
-docker-php-ext-install zip
+# Instalando o Composer
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php composer-setup.php && \
+    php -r "unlink('composer-setup.php');"
+
+# Instalando o Laravel
+RUN php composer.phar create-project laravel/laravel laravel
+
+# Qualquer pessoa que tiver esse dockerfile ou mesmo, dar um run nessa img que acabamos de colocar
+# vai poder rodar o laravel tranquilo, com tudo instalado.
+# Deixando a nossa img rodar, precisamos deixar o processo da nossa app rodando
+ENTRYPOINT ["php","laravel/artisan", "serve"]
+# especificando o host de acesso para qualquer outro host
+CMD ["--host=0.0.0.0"]
