@@ -68,3 +68,24 @@ Para darmos um docker-build somente em um Dockerfile, devemos rodar o seguinte o
 docker build -t vssouza7/hello-express . -f Dockerfile.prod
 
 Garantimos que podemos trabalhar com uma versão local e outra de publicação.
+
+========== OTIMIZANDO AS IMGs ==========
+Quando estamos trabalhando normalmente em modulo de desenv, vamos sempre utilizar uma img Docker que temos varios 
+recursos instalados, no caso do PHP, trabalhamos com uma img debian aonde instalamos os pacotes via apt-get, instalamos o Laravel
+
+Se fossemos colocar em PRD, queriamos uma img mais "enxuta", quanto menor a img, melhor. É mais rapido para subir, baixar e tem menos
+chance de vulnerabilidade de segurança.
+
+Nosso objetivo nesse capitulo agora, é gerar uma img para PRD. Ela vai ter 2 pontos importantes, vamos colocar o nginx como
+serv de proxy reverso, ou seja, toda requisicao vai bater no nginx, ele vai chamar outro container PHP, o PHP vai retornar para o
+Nginx e o Nginx vai retornar para o usuário final.
+Para fazermos isso, vamos rodar o PHP no modo fast-cgi(eu acho q eh esse o nome).
+Vamos utilizar o alpine linux para reduzir o tamanho da img.
+
+Como vamos utilizar o Alpine, vamos aprender a trabalhar com multi-staged-building. A ideia dele, é quef azemos o processo de build
+da img em 1 ou 2 etapas.
+Tenho o stage inicial, o próximo otimizamos a img.
+
+Toda vez que mudarmos a nomenclatura
+
+parei em 10:29 do video "Otimizando Imagens - Otimizacao utilizando Multistage Building", antes de dar problema e congelar na etapa do chown

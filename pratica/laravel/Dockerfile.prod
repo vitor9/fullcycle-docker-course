@@ -1,0 +1,25 @@
+# Estagio de build 1 - gera tudo que precisamos
+FROM php:7.4-cli AS builder
+
+WORKDIR /var/www
+
+RUN apt-get update && \
+    apt-get install libzip-dev -y && \
+    docker-php-ext-install zip
+
+RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php composer-setup.php && \
+    php -r "unlink('composer-setup.php');"
+
+RUN php composer.phar create-project --prefer-dist laravel/laravel laravel
+
+# Estagio de build 2 - copia do estagio "builder", para "/var/www/laravel ."
+FROM php:7.4-fpm-alpine
+WORKDIR /var/www
+RUN rm -rf /var/www/html
+COPY --from=builder /var/www/laravel .
+# Nosso usuario "www-data" e o grupo "www-data", vão ser donos do conteudo de "/var/www." para que possamos ler e escrever lá
+RUN chown -R www-data:www-data /var/www
+EXPOSE 9000
+# PHP vai ficar escutando no FPM, e o nginx vai fazer a chamada
+CMD ["php-fpm"]
