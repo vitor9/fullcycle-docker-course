@@ -1,4 +1,5 @@
 # Estagio de build 1 - gera tudo que precisamos
+# Arquivo rodando antes dos ajustes que o Wesley fez para parar de dar problema
 FROM php:7.4-cli AS builder
 
 WORKDIR /var/www

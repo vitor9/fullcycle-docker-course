@@ -89,3 +89,69 @@ Tenho o stage inicial, o próximo otimizamos a img.
 Toda vez que mudarmos a nomenclatura
 
 parei em 10:29 do video "Otimizando Imagens - Otimizacao utilizando Multistage Building", antes de dar problema e congelar na etapa do chown
+
+docker build -t vssouza7/laravel:prod laravel -f laravel/Dockerfile.prod
+
+############### Nginx como proxy reverso
+Vamos fazer com que o Nginx consiga trabalhar ocm proxy reverso. Todos que bater em
+nginx, vai chamar o PHP, o PHP vai retornar para o nginx, para o nginx retornar o resultado final.
+
+Pode fazer p/ qualquer linguagem. com o Nginx conseguimos trabalhar com SSL, e outras coisas deste tipo
+que eventualmente outros servidores web não fazem. Em geral, é recomendado colocar o nginx de frente.
+
+O Nginx possui um arquivo chamado de "nginx.conf", que configuramos os nossos dominios que vamos trabalhar.
+No nosso caso, vamnos trabalhar apenas com um host que vamos utilizar com o laravel.
+
+Vamos passar uma URL(nome do servodr), na porta 9000 para o nginx.conf
+
+No arquivo nginx.conf, na linha 12, acontece o seguinte:
+Tudo que acessarmos em relação a arquivo e que tiver .php no final, ele vai pegar o nome do arquivo ".php" e vai pedir
+para ele ser executado, no servidor, cujo nome é laravel, na porta 9000.
+e na linha 15, passamos o caminho e os parametros caso esse cara que vai rodar precise.
+linha 19: quando acessarmos qualquer endereço, com por exemplo, "/index" ou "/home" no nosso sistema, ele vai pegar essa url e vai
+passar na linha 20, ai o laravel vai dar conta de trabalhar com essas URLs
+
+Na linha 26, caso tenmha alguma pagina 404, ele vai redirecionar para o index
+
+e as ultimas linhas, é utilizado para o "let's encrypt".
+
+Uma coisa importante, para o nginx funcionar, temos que criar pelo menos um arquivo php nem que ele esteja vazio,
+para que quando alguém acessar qualquer coisa, ele bater no arquivo PHP, e fazer a chamada remota, caso contrário acontece 404.
+
+
+Quando a pessoa acessar qualquer endereço do nginx, o arquivo index.php tem que existir no nginx,
+nem que o arquivo esteja vazio. Pq quando ele for chamado, o nginx vai chamar o nosso php em outro container.
+Se esse arquivo não existir, o nginx retorna 404.
+
+Criando o pacote e "taggeando".
+docker build -t vssouza7/nginx:prod . -f Dockerfile.prod
+
+Criado uma nova rede(por padrão é bridge ):
+docker network create laranet
+
+Rodando a nossa img
+docker run -d --network laranet --name laravel vssouza7/laravel:prod
+
+Com isso, finalizamos a criação do nosso container. Lembrando que ele está exposto apenas pra rede Laranet, e não pro meu computador
+Quem estiver na rede laranet, consegue acessar a porta 9000 do meu container laravel.
+
+Fazendo o nginx trabalhar(-p libero a porta, no caso, é a 8080, que vamos acessar 80 do nginx.)
+docker run -d --network laranet --name nginx -p 8080:80 vssouza7/nginx:prod
+
+Pegando os logs do container nginx:
+docker logs nginx
+
+Link simbólico(só funciona no linux ou mac. Img docker tbm funciona), imaginando que quero
+criar uma pasta atalho chamada "wesley". Quando acessar a pasta wesley, mostrar o conteudo da pasta html.
+
+Como nosso laravel possui uma pasta public, e queremos mandar o kra para a pasta html, vou simplesmente criar um
+link simbolico. Entao quando alguem acessar a html, ele vai ver o conteudo da public. Criamos um link simbolico para isso.
+
+vamos deletar as pastas do laravel e nginx para refazermos a img.
+
+Dando build no nginx:
+docker build -t vssouza7/nginx:prod . -f Dockerfile.prod
+
+E no laravel:
+docker build -t vssouza7/laravel:prod laravel -f laranet/Dockerfile.prod
+=================================================================================================================================================
