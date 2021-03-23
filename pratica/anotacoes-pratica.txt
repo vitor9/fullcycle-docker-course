@@ -147,6 +147,9 @@ criar uma pasta atalho chamada "wesley". Quando acessar a pasta wesley, mostrar 
 Como nosso laravel possui uma pasta public, e queremos mandar o kra para a pasta html, vou simplesmente criar um
 link simbolico. Entao quando alguem acessar a html, ele vai ver o conteudo da public. Criamos um link simbolico para isso.
 
+Criando link simbolico wesley para a pasta html
+ln -s html/ wesley
+
 vamos deletar as pastas do laravel e nginx para refazermos a img.
 
 Dando build no nginx:
@@ -155,3 +158,32 @@ docker build -t vssouza7/nginx:prod . -f Dockerfile.prod
 E no laravel:
 docker build -t vssouza7/laravel:prod laravel -f laranet/Dockerfile.prod
 =================================================================================================================================================
+
+O docker possui comandos dificeis, podemos facilitar todo esse process trabalhando com o Docker-compose. Ele é uma ferramenta complementar ao Docker, que baseado
+num arquivo  de manifesto/yaml, ele consegue pegar todos os containers que queremos subir, e ele sobe de uma vez de forma automatica.
+Com apenas 1 comando, temos o Docker com todos os containers funcionando. Normalmente, todos os projetos que pegarmos com o Docker por ai, provavelmente vamos ver
+um arquivo do Docker-compose, e como ele vai conseguir nos ajudar.
+
+O arquivo docker-compose.yaml vai determinar/especificar quais são os serviços que quermos subir com o docker-compose.
+ 
+O comando "docker rm $(docker ps -a -q) -f" deleta todos os pods da consulta
+
+Subimos utilizando o docker-compose, com o comando:
+docker-compose up
+
+Up sobe todos os nossos containers, e o down, vai fazer com que seja removido os nossos containers
+
+Podemos rodar o container no docker-compose sem que ele "trave" o nosso terminal, e vai "desattachar" os processos do docker-compose do terminal, com o comando:
+docker-compose up -d
+
+o docker-compose down, desce todos os servicos
+
+Podemos perceber também, que o docker-compose está utilizando os mesmos dockerfile's que estavamos trabalhando.
+Se mexermos no nosso dockerfile, o docker-compose não sabe que mexemos, porém, para fazermos com que ele saiba, rodamos o comando, toda vez que alterarmos o dockerfile:
+docker-compose up -d --build
+
+o --build vai "rebuildar" as imagens para mim. Ele vai perceber a imagem que ele tem antes e a que ele tem agora. Então tudo que mudei na img, ele vai gerar a atualizacao.
+o Docker
+
+Podemos deixar o nome de uma img fixa no "image", para o docker sabermos o que estamos trabalhando.
+============================================================================================================================================================

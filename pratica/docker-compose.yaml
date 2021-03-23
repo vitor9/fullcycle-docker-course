@@ -1,0 +1,30 @@
+version: '3'
+
+# Vamos definir quais servicos que eu quero subir.
+# Cada servico basicamente vai definir o container que eu quero trabalhar
+# lembrando que escolhemos o nome dos nossos servicos, assim como escolhemos o nome das nossas img
+# utilizanmos a declaracao 'ports', para a liberacao de portas.
+services:
+  laravel:
+    build: 
+      context: ./laravel
+      dockerfile: Dockerfile.prod
+    image: vssouza7/laravel:prod
+    container_name: laravel
+    networks: 
+      - laranet
+
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile.prod
+    image: vssouza7/nginx:prod
+    container_name: nginx
+    networks:
+      - laranet
+    ports:
+      - "8080:80"
+
+networks:
+  laranet:
+    driver: bridge
