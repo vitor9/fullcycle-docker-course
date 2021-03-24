@@ -187,3 +187,26 @@ o Docker
 
 Podemos deixar o nome de uma img fixa no "image", para o docker sabermos o que estamos trabalhando.
 ============================================================================================================================================================
+
+## Trabalhando com BD utilizando Docker.
+
+No caso especificamente do mysql, quando estamos trabalhando e quando ele vai dar um boot, existe um comando que temos que rodar, se não, vai dar ruim.
+Ele vai depois do nosso entrypoint padrão:
+"command: --inodb-use-native-aio=0"
+
+Se o container cair, vai ser restartado automaticamente no comando:
+"restart: always"
+
+Para entrarmos no nosso container e digitar coisas lá dentro, precisamos habilitar o seguinte comando:
+"tty: true"
+
+O seguinte comando diz  que quando o cara estiver trabalhando com o nosso MySql, tudo que for gravado na pasta var/lib/mysql, 
+ele vai gravar tbm na nossa pasta aqui do projeto, mysql. Ou seja, se eu matar o meu container, não vou perder os meus dados:
+-./mysql:/var/lib/mysql
+Temos a copia de tudo no nosso volume. Então, dessa forma conseguimos trabalhar com banco de dados utilizando docker e docker-compose, sem perder nenhuma
+informacao.
+
+É importante também, trabalharmos utilizando variaveis de ambiente. Setamos ela automaticamente na hora que o container sobe. No docker normal:
+docker run -e
+No docker-compose, é setado através do comando environment. A imagem padrao do docker do mysql, já cria automaticamente p/ a gente o banco de dados
+o usuario e senha baseado nos comandos de variavel de ambiente.
