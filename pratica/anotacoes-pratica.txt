@@ -210,3 +210,6 @@ informacao.
 docker run -e
 No docker-compose, é setado através do comando environment. A imagem padrao do docker do mysql, já cria automaticamente p/ a gente o banco de dados
 o usuario e senha baseado nos comandos de variavel de ambiente.
+
+Para entrarmos dentro de um container, utilizamos o comando:
+docker exec -it <nomedocontainer> bash
